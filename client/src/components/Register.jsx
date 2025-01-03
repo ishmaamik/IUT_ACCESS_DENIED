@@ -60,8 +60,8 @@ function Register() {
               onChange={(e) => setRole(e.target.value)}
               className={styles.select}
             >
-              <option value="student">Student</option>
-              <option value="teacher">Teacher</option>
+              <option value="student">Admin</option>
+              <option value="teacher">Editor</option>
             </select>
           </div>
         </label>
