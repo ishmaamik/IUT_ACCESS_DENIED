@@ -1,7 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../model/User.js';
-import { authenticateUser, authorizeRoles } from '../middlewares/auth.js';
+import { authenticateUser, authorizeRole } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -44,7 +44,7 @@ router.get('/profile', authenticateUser, (req, res) => {
 });
 
 // Admin-only route
-router.get('/admin', authenticateUser, authorizeRoles('admin'), (req, res) => {
+router.get('/admin', authenticateUser, authorizeRole('admin'), (req, res) => {
   res.status(200).json({ message: 'Admin dashboard access granted.' });
 });
 

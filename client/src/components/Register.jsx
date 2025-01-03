@@ -7,7 +7,7 @@ import styles from "../css/Register.module.css";
 function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student");
+  const [role, setRole] = useState("Editor");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,8 +60,8 @@ function Register() {
               onChange={(e) => setRole(e.target.value)}
               className={styles.select}
             >
-              <option value="student">Admin</option>
-              <option value="teacher">Editor</option>
+              <option value="Admin">Admin</option>
+              <option value="Editor">Editor</option>
             </select>
           </div>
         </label>
