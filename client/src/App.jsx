@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
-
+import WelcomeDashboard from "./components/WelcomeDashboard";
 const getRole = () => {
   const token = localStorage.getItem("token");
   console.log("Token:", token); // Check if token exists
@@ -48,7 +48,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<WelcomeDashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>
