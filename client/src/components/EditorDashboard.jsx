@@ -21,6 +21,7 @@ const EditorDashboard = () => {
           <Link to="/chatbot">Banglish Chatbot</Link>
         </li>
       </ul>
+      <Logout />
     </div>
   );
 };

@@ -1,10 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
-import { verifyToken, authorizeRole, authenticateUser } from "../middleware/auth.js";
+import { verifyToken, authorizeRole, authenticateUser } from "../middlewares/auth.js";
 import { ObjectId } from "mongodb";
-import pdfParse from "pdf-parse";
 import { getDocument } from "pdfjs-dist"; 
-import mammoth from "mammoth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 dotenv.config();

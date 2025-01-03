@@ -3,7 +3,9 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
-
+import uploadRoutes from './routes/uploadRoutes.js';
+import chatbotRoutes from './routes/chatbotRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
 
 dotenv.config();
 
@@ -30,7 +32,9 @@ mongoose.connection.once('open', () => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-
+app.use('/api/uploads', uploadRoutes);
+app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/quiz", quizRoutes);
 
 
 // Global error handler
