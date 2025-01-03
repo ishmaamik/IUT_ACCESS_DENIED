@@ -32,11 +32,11 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials." });
     }
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { userId: user._id, role: user.role, username: user.username },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1d" }
     );
-    res.status(200).json({ token, userId: user._id });
+    res.status(200).json({ token, userId: user._id, username: user.username });
   } catch (error) {
     res.status(500).json({ error: "Internal server error." });
   }

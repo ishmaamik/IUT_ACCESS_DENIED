@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
+import translateRoutes from './routes/translate.js';
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/quiz", quizRoutes);
+app.use('/api/editor', translateRoutes);
 
 
 // Global error handler

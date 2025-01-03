@@ -3,55 +3,179 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { verifyToken, authorizeRole } from "../middlewares/auth.js";
+import { verifyToken } from "../middlewares/auth.js";
+import PDF from "../model/PDF.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from "dotenv";
+import { extractTextFromFile } from "./quizRoutes.js"; // Import extractTextFromFile helper function
+
+dotenv.config();
 
 const router = express.Router();
 const upload = multer({ dest: "temp/" }); // Temporary storage for uploaded files
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Route to upload notes (Editors only)
-// Route to upload notes (Editors and Admins)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+const cleanGeneratedText = (text) => {
+  if (typeof text !== "string") {
+    console.error("Unexpected response format: Expected a string.");
+    return "";
+  }
+
+  // Remove unwanted characters and trim extra spaces
+  const cleanedText = text
+    .replace(/[\[\]'\"`{},]/g, "") // Remove characters like quotes, brackets, etc.
+    .replace(/\s+/g, " ") // Replace multiple spaces with a single space
+    .trim(); // Trim leading and trailing spaces
+
+  return cleanedText;
+};
+
+const generateTitle = async (content) => {
+  const prompt = `
+    Generate a one-word title in Bangla for the following content:
+    "${content}"
+    Provide only the title as the response.
+  `;
+
+  console.log("Sending prompt to Gemini AI for title:", prompt);
+
+  try {
+    const response = await model.generateContent(prompt);
+
+    // Log the full response to debug
+    console.log("Gemini AI Full Response for Title:", JSON.stringify(response, null, 2));
+
+    // Extract the title from the nested structure
+    let title = response?.response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+    if (!title) {
+      throw new Error("No title generated.");
+    }
+
+    // Clean the title
+    title = cleanGeneratedText(title);
+
+    // Ensure the title is a single word
+    if (title.split(" ").length > 1) {
+      throw new Error("The generated title is not a single word.");
+    }
+
+    console.log("Generated Title:", title);
+    return title;
+  } catch (error) {
+    console.error("Error in generateTitle:", error.message);
+    throw error;
+  }
+};
+
+const generateCaption = async (content) => {
+  const prompt = `
+    Generate a one-line caption in Bangla summarizing the following content:
+    "${content}"
+    Provide only the caption as the response.
+  `;
+
+  console.log("Sending prompt to Gemini AI for caption:", prompt);
+
+  try {
+    const response = await model.generateContent(prompt);
+
+    // Log the full response to debug
+    console.log("Gemini AI Full Response for Caption:", JSON.stringify(response, null, 2));
+
+    // Extract the caption from the nested structure
+    let caption = response?.response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+    if (!caption) {
+      throw new Error("No caption generated.");
+    }
+
+    // Clean the caption
+    caption = cleanGeneratedText(caption);
+
+    // Stop trimming at the first full stop (Bangla: দাড়ি)
+    const firstSentenceMatch = caption.match(/.*?[।.]/);
+    if (firstSentenceMatch) {
+      caption = firstSentenceMatch[0].trim(); // Reassign the `caption` variable
+    }
+
+    console.log("Generated Caption:", caption);
+    return caption;
+  } catch (error) {
+    console.error("Error in generateCaption:", error.message);
+    throw error;
+  }
+};
+
+// Updated /upload route to include caption generation
 router.post(
   "/upload",
-  verifyToken, // Authenticate the user
+  verifyToken,
   upload.single("file"),
   async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
+    const username = req.user?.username;
+    if (!username) {
+      return res.status(400).json({ error: "Username is missing from request." });
+    }
+
     try {
       const gfsBucket = req.app.locals.gfsBucket;
-
       if (!gfsBucket) {
         return res.status(500).json({ error: "GridFSBucket is not initialized." });
       }
 
       const tempFilePath = path.join(__dirname, "../", req.file.path);
-      const readStream = fs.createReadStream(tempFilePath);
 
-      // Determine the metadata based on the role
-      const userRole = req.user.role;
+      // Read the PDF file and extract text
+      const fileBuffer = fs.readFileSync(tempFilePath);
+      const extractedText = await extractTextFromFile(fileBuffer);
+
+      if (!extractedText || typeof extractedText !== "string") {
+        return res.status(400).json({ error: "Extracted text is invalid or empty." });
+      }
+
+      console.log("Extracted Text for Prompt:", extractedText.slice(0, 500)); // Debugging the extracted text
+
+      // Generate AI title and caption
+      const aiGeneratedTitle = await generateTitle(extractedText);
+      const aiGeneratedCaption = await generateCaption(extractedText);
+
       const metadata = {
-        status: userRole === "Admin" ? "approved" : "pending", // Automatically approve if the role is Admin
-        uploader: req.user.userId,
+        status: req.user.role === "Admin" ? "approved" : "pending",
+        uploader: username,
       };
 
+      const readStream = fs.createReadStream(tempFilePath);
       const uploadStream = gfsBucket.openUploadStream(req.file.originalname, { metadata });
 
       readStream.pipe(uploadStream);
 
-      uploadStream.on("finish", () => {
-        fs.unlinkSync(tempFilePath); // Delete temporary file
-        const message =
-          userRole === "Admin"
-            ? "File is uploaded successfully!"
-            : "File is to be uploaded and is pending for Admin's approval!!";
+      uploadStream.on("finish", async () => {
+        fs.unlinkSync(tempFilePath); // Delete temp file
+
+        const pdfData = new PDF({
+          username,
+          pdfFileName: req.file.originalname,
+          aiGeneratedTitle,
+          aiGeneratedCaption,
+        });
+
+        await pdfData.save();
+
         res.status(200).json({
-          message,
+          message: "File uploaded successfully!",
           fileId: uploadStream.id,
           filename: req.file.originalname,
+          aiGeneratedTitle,
+          aiGeneratedCaption,
         });
       });
 
@@ -60,6 +184,7 @@ router.post(
         res.status(500).json({ error: "Failed to upload file." });
       });
     } catch (error) {
+      console.error("Error during file upload:", error.message);
       res.status(500).json({ error: "An error occurred during file upload." });
     }
   }

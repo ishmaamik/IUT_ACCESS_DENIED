@@ -23,7 +23,7 @@ const fetchFileFromGridFS = async (gfsBucket, fileId) => {
 };
 
 // Helper to extract text from files
-const extractTextFromFile = async (data) => {
+export const extractTextFromFile = async (data) => {
   try {
     // Convert Buffer to Uint8Array
     const uint8ArrayData = new Uint8Array(data);

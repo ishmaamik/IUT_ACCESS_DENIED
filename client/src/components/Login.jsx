@@ -23,6 +23,7 @@ function Login() {
       const decoded = jwtDecode(res.data.token);
       console.log("Decoded JWT:", decoded); // Check decoded token
       localStorage.setItem("userId", decoded.userId);
+      localStorage.setItem("username", decoded.username);
       localStorage.setItem("role", decoded.role); // Save role
 
       toast.success("Successfully logged in!");
