@@ -122,6 +122,7 @@ router.post(
     }
 
     const username = req.user?.username;
+    const user = req.user;
     if (!username) {
       return res.status(400).json({ error: "Username is missing from request." });
     }
@@ -162,7 +163,7 @@ router.post(
         fs.unlinkSync(tempFilePath); // Delete temp file
 
         const pdfData = new PDF({
-          username,
+          userId: user.userId,
           pdfFileName: req.file.originalname,
           aiGeneratedTitle,
           aiGeneratedCaption,

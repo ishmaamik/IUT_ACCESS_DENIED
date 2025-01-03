@@ -19,25 +19,21 @@ const Chatbot = () => {
         const token = localStorage.getItem("token");
         if (!token) {
           setError("Unauthorized. Please log in.");
-          navigate("/login"); // Redirect to login if not authenticated
+          navigate("/login");
           return;
         }
 
-        const response = await fetch(
+        const response = await axios.get(
           "http://localhost:5000/api/quiz/approved-notes",
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        const data = await response.json();
-
-        if (response.ok) {
-          setNotes(data.notes || []);
+        if (response.status === 200) {
+          setNotes(response.data.notes || []);
         } else {
-          setError(data.error || "Failed to fetch notes.");
+          setError(response.data.error || "Failed to fetch notes.");
         }
       } catch (err) {
         setError("Error fetching notes: " + err.message);
@@ -110,7 +106,7 @@ const Chatbot = () => {
                   }
                   onClick={() => setSelectedNote(note)}
                 >
-                  {note.filename}
+                  {note.pdfFileName}
                 </button>
               </li>
             ))}

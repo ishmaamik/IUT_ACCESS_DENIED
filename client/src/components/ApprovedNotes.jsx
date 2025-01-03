@@ -66,7 +66,7 @@ const ApprovedNotes = () => {
         <ul>
           {notes.map((note) => (
             <li key={note.fileId}>
-              {note.filename}{" "}
+              {note.pdfFileName}{" "}
               <button
                 onClick={() => handleDownload(note.fileId, note.filename)}
               >

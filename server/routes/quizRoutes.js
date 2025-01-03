@@ -4,7 +4,7 @@ import { verifyToken, authorizeRole, authenticateUser } from "../middlewares/aut
 import { ObjectId } from "mongodb";
 import { getDocument } from "pdfjs-dist"; 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-
+import PDF from "../model/PDF.js";
 dotenv.config();
 
 const router = express.Router();
@@ -123,8 +123,8 @@ const generateQuizEditor = async (text) => {
 
 const generateAnswer = async (question, context = "") => {
   const prompt = context
-    ? `Translate the following Banglish text to Bangla and provide answers based on the context. Context:\n"${context}".\nQuestion: "${question}". Only write in bangla, no explanation nothing.`
-    : `I gave you a banglish or bangla text ${question}, reply only in bangla, no explanation nothing, just normal human to human talk".`;
+    ? `Translate the following Banglish text to Bangla and provide answers based on the context. Context:\n"${context}".\nQuestion: "${question}".`
+    : `I gave you a banglish or bangla text ${question}, you don't need to translate it to bangla, just make it a human to human conversation by replying in bangla, no need to provide any additional explanation".`;
 
   console.log("Sending prompt to Gemini AI:", prompt);
 
@@ -295,39 +295,22 @@ router.put(
 );
 
 // Approved Notes Route (Editors Only)
-router.get(
-  "/approved-notes",
-  verifyToken, // Middleware to verify token
-  async (req, res) => {
-    try {
-      // Check if the user role exists in the request
-      const userRole = req.user?.role;
+router.get("/approved-notes", verifyToken, async (req, res) => {
+  try {
+    // Fetch approved notes from the PDF collection
+    const notes = await PDF.find({}).select("pdfFileName aiGeneratedTitle aiGeneratedCaption").lean();
 
-      // Allow only Editors or Admins
-      if (userRole !== "Editor" && userRole !== "Admin") {
-        return res.status(403).json({ error: "Access denied. Unauthorized role." });
-      }
-
-      const files = await req.app.locals.db
-        .collection("uploads.files")
-        .find({ "metadata.status": "approved" }) // Fetch only approved notes
-        .toArray();
-
-      // Respond with approved notes
-      res.status(200).json({
-        message: "Approved notes retrieved successfully.",
-        notes: files.map((file) => ({
-          fileId: file._id,
-          filename: file.filename,
-          uploadDate: file.uploadDate,
-        })),
-      });
-    } catch (error) {
-      console.error("Error fetching approved notes:", error.message);
-      res.status(500).json({ error: "Failed to retrieve approved notes." });
+    if (!notes || notes.length === 0) {
+      return res.status(404).json({ error: "No approved notes found." });
     }
+
+    res.status(200).json({ notes });
+  } catch (error) {
+    console.error("Error fetching approved notes:", error.message);
+    res.status(500).json({ error: "Failed to fetch approved notes." });
   }
-);
+});
+
 
 
 // Download Note Route (Editors Only)

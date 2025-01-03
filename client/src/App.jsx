@@ -14,8 +14,9 @@ import Chatbot from "./components/Chatbot";
 import UploadNotes from "./components/UploadNotes";
 import ApproveNote from "./components/ApproveNote";
 import ApprovedNotes from "./components/ApprovedNotes";
-import PendingNotes from "./components/PendingNotes";
 import Editor from "./components/Editor";
+import ProfileDashboard from "./components/ProfileDashboard";
+import PendingNotes from "./components/PendingNotes";
 
 const ProtectedRoute = ({ element, allowedRoles }) => {
   const role = getRole();
@@ -68,6 +69,24 @@ function App() {
             <ProtectedRoute
               element={<PendingNotes />}
               allowedRoles={["Admin"]}
+            />
+          }
+        />
+        <Route
+          path="/approved-pdfs"
+          element={
+            <ProtectedRoute
+              element={<ApprovedNotes />}
+              allowedRoles={["Editor", "Admin"]}
+            />
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute
+              element={<ProfileDashboard />}
+              allowedRoles={["Admin", "Editor"]}
             />
           }
         />

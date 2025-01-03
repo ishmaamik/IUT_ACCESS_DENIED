@@ -30,24 +30,22 @@ export const authorizeRole = (requiredRole) => {
 };
 
 // Verify Token Middleware (For Additional Validation if Needed)
-export const verifyToken = async (req, res, next) => {
+
+
+export const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(403).json({ error: "No token provided." });
+  }
+
   try {
-    let token = req.header("Authorization");
-
-    if (!token) {
-      return res.status(403).json({ error: "Access Denied: Missing Token" });
-    }
-
-    if (token.startsWith("Bearer ")) {
-      token = token.slice(7, token.length).trimLeft();
-    }
-
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = verified; // Attach the decoded token payload (user info) to the request
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // Populate req.user
     next();
   } catch (err) {
-    console.error("Token verification failed:", err.message);
-    res.status(500).json({ error: "Invalid or expired token" });
+    res.status(401).json({ error: "Invalid token." });
   }
 };
 

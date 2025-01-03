@@ -7,12 +7,14 @@ import dotenv from "dotenv";
 import PDF from "../model/PDF.js";
 import { generateCaption, generateTitle } from "./uploadRoutes.js";
 
+import jwt from "jsonwebtoken";
 // Initialize dotenv
 dotenv.config();
 
 const router = express.Router();
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { verifyToken } from "../middlewares/auth.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -61,7 +63,8 @@ if (!fs.existsSync(fontPath)) {
 
 // Route for converting text to PDF
 // Route for converting text to PDF
-router.post("/convert-to-pdf", async (req, res) => {
+// Route for converting text to PDF
+router.post("/convert-to-pdf", verifyToken, async (req, res) => {
   const { text } = req.body;
 
   try {
@@ -104,7 +107,7 @@ router.post("/convert-to-pdf", async (req, res) => {
       // Save metadata to the database
       try {
         const pdfData = new PDF({
-          username: req.user?.username || "placeholder_username",
+          userId: req.user.userId, // Use userId from req.user
           pdfFileName: path.basename(tempPath),
           aiGeneratedTitle,
           aiGeneratedCaption,
@@ -133,6 +136,7 @@ router.post("/convert-to-pdf", async (req, res) => {
     res.status(500).json({ error: "Failed to generate PDF." });
   }
 });
+
 
 
 export default router;

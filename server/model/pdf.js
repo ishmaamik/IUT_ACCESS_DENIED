@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 const pdfSchema = new mongoose.Schema({
-  username: { type: String, required: true },
+  userId: { type: String, required: true },
   pdfFileName: { type: String, required: true },
   aiGeneratedTitle: { type: String, required: true },
   aiGeneratedCaption: { type: String, required: true },
