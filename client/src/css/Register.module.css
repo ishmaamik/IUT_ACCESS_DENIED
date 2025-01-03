@@ -1,0 +1,111 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(90deg, rgba(29,0,36,1) 0%, rgba(255,0,245,1) 0%, rgba(102,0,255,1) 100%);
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+}
+
+.form {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+}
+
+.title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: bold;
+}
+
+.label {
+    display: block;
+    margin-bottom: 20px;
+}
+
+.input,
+.select {
+    width: 100%;
+    padding: 10px 5px;
+    border: none;
+    border-bottom: 2px solid #ccc;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    outline: none;
+    background: none;
+    color: #333;
+}
+
+.input:focus,
+.select:focus {
+    border-bottom: 2px solid #667eea;
+}
+
+.dropdownWrapper {
+    position: relative;
+    width: 100%;
+}
+
+.select {
+    appearance: none; /* Remove default dropdown arrow */
+    background: transparent;
+    cursor: pointer;
+    padding-right: 20px; /* Add space for custom arrow */
+}
+
+.select:after {
+    content: "▼";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background: linear-gradient(90deg, rgba(29,0,36,1) 0%, rgba(255,0,245,1) 0%, rgba(102,0,255,1) 100%);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.button:hover {
+    background: linear-gradient(to right, #764ba2, #667eea);
+}
+
+.extraLinks {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.link {
+    text-decoration: none;
+    color: #667eea;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.link:hover {
+    color: #764ba2;
+}
