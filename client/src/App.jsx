@@ -1,87 +1,160 @@
-import React from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import Dashboard from "./components/Dashboard";
-import WelcomeDashboard from "./components/WelcomeDashboard";
-import { getRole } from "../utils/auth";
-import Chatbot from "./components/Chatbot";
-import UploadNotes from "./components/UploadNotes";
-import ApproveNote from "./components/ApproveNote";
-import ApprovedNotes from "./components/ApprovedNotes";
-import PendingNotes from "./components/PendingNotes";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import styles from "../css/Chatbot.module.css";
+import { useNavigate } from "react-router-dom";
 
-const ProtectedRoute = ({ element, allowedRoles }) => {
-  const role = getRole();
+const Chatbot = () => {
+  const [notes, setNotes] = useState([]);
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [query, setQuery] = useState("");
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  if (!role) {
-    console.log("Redirecting to login...");
-    return <Navigate to="/login" />;
-  }
+  // Fetch notes on component load
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("Unauthorized. Please log in.");
+          navigate("/login"); // Redirect to login if not authenticated
+          return;
+        }
 
-  if (!allowedRoles.includes(role)) {
-    console.log("Role not authorized. Redirecting to home...");
-    return <Navigate to="/" />;
-  }
+        const response = await fetch(
+          "http://localhost:5000/api/quiz/approved-notes",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-  return element;
+        const data = await response.json();
+
+        if (response.ok) {
+          setNotes(data.notes || []);
+        } else {
+          setError(data.error || "Failed to fetch notes.");
+        }
+      } catch (err) {
+        setError("Error fetching notes: " + err.message);
+      }
+    };
+
+    fetchNotes();
+  }, [navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!query.trim()) {
+      setError("Please enter a valid question.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const endpoint = selectedNote
+        ? "http://localhost:5000/api/quiz/chat-about-note"
+        : "http://localhost:5000/api/quiz/chat";
+
+      const payload = selectedNote
+        ? { fileId: selectedNote.fileId, question: query }
+        : { question: query };
+
+      const res = await axios.post(endpoint, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const newConversation = {
+        question: query,
+        answer: res.data.answer || "No answer available.",
+      };
+      setConversations([...conversations, newConversation]);
+      setQuery("");
+    } catch (error) {
+      console.error("Error asking question:", error);
+      setConversations([
+        ...conversations,
+        {
+          question: query,
+          answer: "Sorry, there was an error answering your question.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className={styles.container}>
+      <h1>Interactive Chatbot</h1>
+      {error && <p className={styles.error}>{error}</p>}
+
+      <div className={styles.notesSelector}>
+        <h3>Available Notes</h3>
+        {notes.length > 0 ? (
+          <ul>
+            {notes.map((note) => (
+              <li key={note.fileId}>
+                <button
+                  className={
+                    selectedNote?.fileId === note.fileId ? styles.selected : ""
+                  }
+                  onClick={() => setSelectedNote(note)}
+                >
+                  {note.filename}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No notes available.</p>
+        )}
+      </div>
+
+      <div className={styles.chatSection}>
+        <h4>
+          {selectedNote
+            ? `Selected Note: ${selectedNote.filename}`
+            : "General Chat"}
+        </h4>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Ask a question..."
+            className={styles.input}
+            disabled={loading}
+          />
+          <button type="submit" className={styles.button} disabled={loading}>
+            {loading ? "Processing..." : "Ask"}
+          </button>
+        </form>
+      </div>
+
+      <div className={styles.conversationsContainer}>
+        {conversations.map((conv, index) => (
+          <div key={index} className={styles.conversation}>
+            <p>
+              <strong>You:</strong> {conv.question}
+            </p>
+            <p>
+              <strong>Bot:</strong> {conv.answer}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<WelcomeDashboard />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute
-              element={<Dashboard />}
-              allowedRoles={["Admin", "Editor"]}
-            />
-          }
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/chatbot" element={<Chatbot />} />
-        <Route path="/upload-pdfs" element={<UploadNotes />} />
-        <Route
-          path="/approved-pdfs"
-          element={
-            <ProtectedRoute
-              element={<ApprovedNotes />}
-              allowedRoles={["Editor", "Admin"]}
-            />
-          }
-        />
-        <Route
-          path="/pending-pdfs"
-          element={
-            <ProtectedRoute
-              element={<PendingNotes />}
-              allowedRoles={["Admin"]}
-            />
-          }
-        />
-
-        <Route
-          path="/approve-pdf/:id"
-          element={
-            <ProtectedRoute
-              element={<ApproveNote />}
-              allowedRoles={["Admin"]}
-            />
-          }
-        />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
-  );
-}
-
-export default App;
+export default Chatbot;

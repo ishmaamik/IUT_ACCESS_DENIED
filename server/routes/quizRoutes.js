@@ -121,29 +121,29 @@ const generateQuizEditor = async (text) => {
 };
 
 
-const generateAnswer = async (question) => {
-  const prompt = `You are an expert AI assistant. Please answer the following question clearly and concisely: "${question}"`;
+const generateAnswer = async (question, context = "") => {
+  const prompt = context
+    ? `Translate the following Banglish text to Bangla and provide answers based on the context. Context:\n"${context}".\nQuestion: "${question}".`
+    : `I gave you a banglish or bangla text ${question}, you don't need to translate it to bangla, just make it a human to human conversation by replying in bangla, no need to provide any additional explanation".`;
 
-  console.log('Sending prompt to Gemini AI:', prompt);
+  console.log("Sending prompt to Gemini AI:", prompt);
 
   try {
     const result = await model.generateContent(prompt);
 
-    console.log('Received response from Gemini AI:', result); // Log full response for debugging
-
-    // Extract the answer from the response
     if (result.response && result.response.candidates) {
       const answer = result.response.candidates[0].content.parts[0].text;
-      console.log('Generated answer:', answer);
+      console.log("Generated answer:", answer);
       return answer;
     } else {
-      throw new Error('Unexpected response structure from Gemini AI.');
+      throw new Error("Unexpected response structure from Gemini AI.");
     }
   } catch (error) {
-    console.error('Error in generateAnswer:', error.message);
+    console.error("Error in generateAnswer:", error.message);
     throw error;
   }
 };
+
 
 // Generate Quiz Route
 router.post(
@@ -405,13 +405,29 @@ router.post("/chat-about-note", verifyToken, async (req, res) => {
 
     const fileContent = await fetchFileFromGridFS(gfsBucket, fileId);
     const noteContent = await extractTextFromFile(fileContent);
-    const answer = await generateAnswer(noteContent, question);
 
+    const answer = await generateAnswer(question, noteContent);
     res.status(200).json({ question, answer });
-  } catch (err) {
-    console.error("Error in /chat-about-note:", err.message);
+  } catch (error) {
+    console.error("Error in /chat-about-note:", error.message);
     res.status(500).json({ error: "Failed to process the request." });
   }
 });
 
+
 export default router;
+
+router.post("/chat", authenticateUser, async (req, res) => {
+  const { question } = req.body;
+
+  if (!question || typeof question !== "string") {
+    return res.status(400).json({ error: "A valid question is required." });
+  }
+
+  try {
+    const answer = await generateAnswer(question);
+    res.status(200).json({ message: "Answer generated successfully!", question, answer });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to generate answer." });
+  }
+});
