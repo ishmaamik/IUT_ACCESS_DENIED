@@ -1,57 +1,161 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import styles from '../css/Chatbot.module.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import styles from "../css/Chatbot.module.css";
+import { useNavigate } from "react-router-dom";
 
-function Chatbot() {
-  const [query, setQuery] = useState('');  // User's input question
-  const [conversations, setConversations] = useState([]);  // Store conversation rounds (question and answer)
+const Chatbot = () => {
+  const [notes, setNotes] = useState([]);
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [query, setQuery] = useState("");
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  // Fetch notes on component load
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("Unauthorized. Please log in.");
+          navigate("/login");
+          return;
+        }
+
+        const response = await fetch(
+          "http://localhost:5000/api/quiz/approved-notes",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setNotes(data.notes || []);
+        } else {
+          setError(data.error || "Failed to fetch notes.");
+        }
+      } catch (err) {
+        setError("Error fetching notes: " + err.message);
+      }
+    };
+
+    fetchNotes();
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (query.trim() === "") return;
+    if (!query.trim()) {
+      setError("Please enter a valid question.");
+      return;
+    }
+
+    if (!selectedNote) {
+      setError("Please select a note to ask questions about.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
 
     try {
-      const res = await axios.post('http://localhost:5000/api/quiz/ask-question', { question: query });
-      const newConversation = { question: query, answer: res.data.answer };
-      setConversations([...conversations, newConversation]);  // Add the new round of Q&A
-      setQuery('');  // Clear the input field after submitting
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        "http://localhost:5000/api/quiz/chat-about-note",
+        {
+          fileId: selectedNote.fileId,
+          question: query,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const newConversation = {
+        question: query,
+        answer: res.data.answer || "No answer available.",
+      };
+      setConversations([...conversations, newConversation]);
+      setQuery("");
     } catch (error) {
-      console.error("Error asking question", error);
-      setConversations([...conversations, { question: query, answer: "Sorry, there was an error answering your question." }]);
-      setQuery('');
+      console.error("Error asking question:", error);
+      setConversations([
+        ...conversations,
+        {
+          question: query,
+          answer: "Sorry, there was an error answering your question.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className={styles.container}>
       <h1>Interactive Chatbot</h1>
+      {error && <p className={styles.error}>{error}</p>}
+
+      <div className={styles.notesSelector}>
+        <h3>Select a Note</h3>
+        {notes.length > 0 ? (
+          <ul>
+            {notes.map((note) => (
+              <li key={note.fileId}>
+                <button
+                  className={
+                    selectedNote?.fileId === note.fileId ? styles.selected : ""
+                  }
+                  onClick={() => setSelectedNote(note)}
+                >
+                  {note.filename}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No notes available.</p>
+        )}
+      </div>
+
+      {selectedNote && (
+        <div className={styles.chatSection}>
+          <h4>Selected Note: {selectedNote.filename}</h4>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ask a question..."
+              className={styles.input}
+              disabled={loading}
+            />
+            <button type="submit" className={styles.button} disabled={loading}>
+              {loading ? "Processing..." : "Ask"}
+            </button>
+          </form>
+        </div>
+      )}
+
       <div className={styles.conversationsContainer}>
-        {/* Display all rounds of questions and answers */}
         {conversations.map((conv, index) => (
           <div key={index} className={styles.conversation}>
-            <div className={styles.userQuestion}>
+            <p>
               <strong>You:</strong> {conv.question}
-            </div>
-            <div className={styles.botAnswer}>
+            </p>
+            <p>
               <strong>Bot:</strong> {conv.answer}
-            </div>
+            </p>
           </div>
         ))}
       </div>
-
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ask a question..."
-          className={styles.input}
-        />
-        <button type="submit" className={styles.button}>Ask</button>
-      </form>
     </div>
   );
-}
+};
 
 export default Chatbot;

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const AdminDashboard = () => {
   return (
     <div>
-      <h2>Teacher Dashboard</h2>
+      <h2>Admin Dashboard</h2>
       <ul>
         <li>
           <Link to="/pending-pdfs">View Pending PDFs</Link>

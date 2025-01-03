@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 
+// Authenticate User Middleware
 export const authenticateUser = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -17,6 +18,7 @@ export const authenticateUser = (req, res, next) => {
   }
 };
 
+// Authorize Role Middleware
 export const authorizeRole = (requiredRole) => {
   return (req, res, next) => {
     if (req.user.role === requiredRole) {
@@ -25,9 +27,9 @@ export const authorizeRole = (requiredRole) => {
       res.status(403).json({ error: "Access denied. Insufficient permissions." });
     }
   };
-
 };
 
+// Verify Token Middleware (For Additional Validation if Needed)
 export const verifyToken = async (req, res, next) => {
   try {
     let token = req.header("Authorization");
@@ -48,3 +50,4 @@ export const verifyToken = async (req, res, next) => {
     res.status(500).json({ error: "Invalid or expired token" });
   }
 };
+

@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Logout from "./Logout";
 
-const StudentDashboard = () => {
+const EditorDashboard = () => {
   return (
     <div>
-      <h2>Student Dashboard</h2>
+      <h2>Editor Dashboard</h2>
 
       <ul>
         <li>
@@ -24,4 +25,4 @@ const StudentDashboard = () => {
   );
 };
 
-export default StudentDashboard;
+export default EditorDashboard;

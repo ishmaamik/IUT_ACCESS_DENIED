@@ -4,20 +4,20 @@ import { Link } from "react-router-dom";
 const Unauthorized = () => {
   return (
     <div>
-      <h2>Student Dashboard</h2>
+      <h2>You are unauthorized! Please login or register!</h2>
 
       <ul>
         <li>
-          <Link to="/text-editor">Login</Link>
+          <Link to="/login">Login</Link>
         </li>
         <li>
-          <Link to="/upload-pdfs">Register</Link>
+          <Link to="/register">Register</Link>
         </li>
         <li>
-          <Link to="/approved-pdfs">Search</Link>
+          <Link to="/search">Search</Link>
         </li>
         <li>
-          <Link to="/chatbot">About Us</Link>
+          <Link to="/about-us">About Us</Link>
         </li>
       </ul>
     </div>

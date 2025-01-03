@@ -3,26 +3,35 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styles from "../css/Login.module.css";
-
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", {
         username,
         password,
       });
-      console.log("Logged in:", res.data); // Handle login logic, save token, etc.
-      toast.success("Successfully logged in!"); // Show success notification
+
+      localStorage.setItem("token", res.data.token);
+      const decoded = jwtDecode(res.data.token);
+      console.log("Decoded JWT:", decoded); // Check decoded token
+      localStorage.setItem("userId", decoded.userId);
+      localStorage.setItem("role", decoded.role); // Save role
+
+      toast.success("Successfully logged in!");
+      navigate("/dashboard"); // Redirect to dashboard
     } catch (error) {
-      console.error(error);
-      toast.error("Login failed. Please check your credentials."); // Show error notification
+      console.error("Login error:", error.response?.data || error.message);
+      toast.error("Login failed. Please check your credentials.");
     }
   };
-
   return (
     <>
       <div className={styles.container}>
@@ -57,9 +66,6 @@ function Login() {
               Create an Account
             </a>
           </div>
-
-          
-
         </form>
       </div>
       <ToastContainer />
