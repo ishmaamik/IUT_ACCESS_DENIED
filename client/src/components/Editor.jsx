@@ -1,7 +1,5 @@
-// Editor.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-
 const Editor = () => {
   const [text, setText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
@@ -21,6 +19,43 @@ const Editor = () => {
     }
   };
 
+  const handleDownloadAndUploadPdf = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Assuming the token is stored in localStorage
+  
+      if (!token) {
+        alert("Unauthorized: Please log in.");
+        return;
+      }
+  
+      const response = await axios.post(
+        "http://localhost:5000/api/editor/convert-to-pdf",
+        { text: translatedText },
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the request header
+          },
+        }
+      );
+  
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "translated.pdf");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+  
+      alert("PDF successfully generated, uploaded, and downloaded.");
+    } catch (error) {
+      console.error("Error generating and downloading PDF:", error.message);
+      if (error.response && error.response.status === 403) {
+        alert("Unauthorized: Please check your login status.");
+      }
+    }
+  };
+  
   return (
     <div
       style={{
@@ -74,6 +109,9 @@ const Editor = () => {
           <p style={{ margin: "10px 0 0", whiteSpace: "pre-wrap" }}>
             {translatedText}
           </p>
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button onClick={handleDownloadAndUploadPdf}>Download PDF</button>
         </div>
       </div>
     </div>

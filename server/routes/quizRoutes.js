@@ -123,8 +123,8 @@ const generateQuizEditor = async (text) => {
 
 const generateAnswer = async (question, context = "") => {
   const prompt = context
-    ? `Translate the following Banglish text to Bangla and provide answers based on the context. Context:\n"${context}".\nQuestion: "${question}".`
-    : `I gave you a banglish or bangla text ${question}, you don't need to translate it to bangla, just make it a human to human conversation by replying in bangla, no need to provide any additional explanation".`;
+    ? `Translate the following Banglish text to Bangla and provide answers based on the context. Context:\n"${context}".\nQuestion: "${question}". Only write in bangla, no explanation nothing.`
+    : `I gave you a banglish or bangla text ${question}, reply only in bangla, no explanation nothing, just normal human to human talk".`;
 
   console.log("Sending prompt to Gemini AI:", prompt);
 
@@ -334,7 +334,7 @@ router.get(
 router.get(
   "/download-note/:id",
   verifyToken,
-  authorizeRole("Editor"),
+  authorizeRole("Editor", "Admin"),
   async (req, res) => {
     const { id } = req.params;
 

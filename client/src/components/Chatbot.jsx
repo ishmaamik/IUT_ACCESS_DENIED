@@ -19,7 +19,7 @@ const Chatbot = () => {
         const token = localStorage.getItem("token");
         if (!token) {
           setError("Unauthorized. Please log in.");
-          navigate("/login");
+          navigate("/login"); // Redirect to login if not authenticated
           return;
         }
 
@@ -55,26 +55,23 @@ const Chatbot = () => {
       return;
     }
 
-    if (!selectedNote) {
-      setError("Please select a note to ask questions about.");
-      return;
-    }
-
     setLoading(true);
     setError("");
 
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post(
-        "http://localhost:5000/api/quiz/chat-about-note",
-        {
-          fileId: selectedNote.fileId,
-          question: query,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+
+      const endpoint = selectedNote
+        ? "http://localhost:5000/api/quiz/chat-about-note"
+        : "http://localhost:5000/api/quiz/chat";
+
+      const payload = selectedNote
+        ? { fileId: selectedNote.fileId, question: query }
+        : { question: query };
+
+      const res = await axios.post(endpoint, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const newConversation = {
         question: query,
@@ -102,7 +99,7 @@ const Chatbot = () => {
       {error && <p className={styles.error}>{error}</p>}
 
       <div className={styles.notesSelector}>
-        <h3>Select a Note</h3>
+        <h3>Available Notes</h3>
         {notes.length > 0 ? (
           <ul>
             {notes.map((note) => (
@@ -123,24 +120,26 @@ const Chatbot = () => {
         )}
       </div>
 
-      {selectedNote && (
-        <div className={styles.chatSection}>
-          <h4>Selected Note: {selectedNote.filename}</h4>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask a question..."
-              className={styles.input}
-              disabled={loading}
-            />
-            <button type="submit" className={styles.button} disabled={loading}>
-              {loading ? "Processing..." : "Ask"}
-            </button>
-          </form>
-        </div>
-      )}
+      <div className={styles.chatSection}>
+        <h4>
+          {selectedNote
+            ? `Selected Note: ${selectedNote.filename}`
+            : "General Chat"}
+        </h4>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Ask a question..."
+            className={styles.input}
+            disabled={loading}
+          />
+          <button type="submit" className={styles.button} disabled={loading}>
+            {loading ? "Processing..." : "Ask"}
+          </button>
+        </form>
+      </div>
 
       <div className={styles.conversationsContainer}>
         {conversations.map((conv, index) => (

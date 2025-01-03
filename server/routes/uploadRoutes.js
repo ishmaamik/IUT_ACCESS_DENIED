@@ -8,7 +8,7 @@ import PDF from "../model/PDF.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
 import { extractTextFromFile } from "./quizRoutes.js"; // Import extractTextFromFile helper function
-
+import axios from "axios"
 dotenv.config();
 
 const router = express.Router();
@@ -34,7 +34,7 @@ const cleanGeneratedText = (text) => {
   return cleanedText;
 };
 
-const generateTitle = async (content) => {
+export const generateTitle = async (content) => {
   const prompt = `
     Generate a one-word title in Bangla for the following content:
     "${content}"
@@ -72,7 +72,7 @@ const generateTitle = async (content) => {
   }
 };
 
-const generateCaption = async (content) => {
+export const generateCaption = async (content) => {
   const prompt = `
     Generate a one-line caption in Bangla summarizing the following content:
     "${content}"
