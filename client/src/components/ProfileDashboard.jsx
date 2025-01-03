@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "../css/ProfileDashboard.module.css";
+import { toast } from "react-toastify";
 
 const ProfileDashboard = () => {
   const [user, setUser] = useState({});
@@ -35,6 +36,31 @@ const ProfileDashboard = () => {
     };
     fetchUserData();
   }, []);
+
+  const handleTogglePrivacy = async (pdfId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `http://localhost:5000/api/profile/pdfs/${pdfId}/toggle-privacy`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      const updatedPrivacy = response.data.privacy;
+  
+      // Update the local state
+      setUploadedPdfs((prevPdfs) =>
+        prevPdfs.map((pdf) =>
+          pdf._id === pdfId ? { ...pdf, privacy: updatedPrivacy } : pdf
+        )
+      );
+  
+      toast.success("Privacy updated successfully!");
+    } catch (err) {
+      console.error("Error toggling privacy:", err.message);
+      toast.error("Failed to update privacy.");
+    }
+  };
 
   const handleUpdateUsername = async () => {
     try {
@@ -87,6 +113,8 @@ const ProfileDashboard = () => {
       alert("Error downloading file: " + err.message);
     }
   };
+  
+
 
   return (
     <div className={styles.dashboard}>
@@ -190,28 +218,22 @@ const ProfileDashboard = () => {
                       >
                         Download
                       </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4>Downloaded PDFs</h4>
-                <ul>
-                  {downloadedPdfs.map((pdf) => (
-                    <li key={pdf._id}>
-                      {pdf.pdfFileName}
+
                       <button
-                        onClick={() =>
-                          handleDownloadPdf(pdf._id, pdf.pdfFileName)
-                        }
+                        onClick={() => handleTogglePrivacy(pdf._id)}
                         className={styles.button}
                       >
-                        Download
+                        {pdf.privacy === "public"
+                          ? "Public"
+                          : pdf.privacy === "private"
+                          ? "Private"
+                          : "Set Privacy"}
                       </button>
                     </li>
                   ))}
                 </ul>
               </div>
+              <div></div>
             </div>
           </section>
         </main>

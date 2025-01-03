@@ -7,7 +7,7 @@ import uploadRoutes from './routes/uploadRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import translateRoutes from './routes/translate.js';
-
+import profileRoutes from './routes/profileRoutes.js';
 dotenv.config();
 
 const app = express();
@@ -37,7 +37,7 @@ app.use('/api/uploads', uploadRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use('/api/editor', translateRoutes);
-
+app.use('/api/profile', profileRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

@@ -11,12 +11,13 @@ router.get("/profile", verifyToken, async (req, res) => {
       }
   
       const user = await User.findById(req.user.userId).select("-password");
+      console.log("USEr:", req.user.userId)
       if (!user) {
         console.error("User not found.");
         return res.status(404).json({ error: "User not found." });
       }
   
-      const uploadedPdfs = await PDF.find({ userId: user.userId });
+      const uploadedPdfs = await PDF.find({ userId: req.user.userId });
       const downloadedPdfs = []; // Add logic for downloaded PDFs if tracking is implemented
   
       res.status(200).json({ user, uploadedPdfs, downloadedPdfs });
@@ -54,31 +55,44 @@ router.get("/profile", verifyToken, async (req, res) => {
   
   router.get("/pdfs", verifyToken, async (req, res) => {
     try {
-      const username = req.user.username; // Logged-in user's username
+      const userId = req.user?.userId; // Logged-in user's userId
   
-      // Fetch PDFs with selected fields
-      const userPdfs = await PDF.find({ username })
-        .select("pdfFileName aiGeneratedTitle aiGeneratedCaption uploadedAt")
-        .lean();
+      // Find PDFs where the userId matches
+      const userPdfs = await PDF.find({ userId }).select("pdfFileName aiGeneratedTitle aiGeneratedCaption uploadedAt").lean();
   
       if (!userPdfs || userPdfs.length === 0) {
         return res.status(404).json({ error: "No PDFs found for this user." });
       }
   
-      // Format the response
-      const formattedPdfs = userPdfs.map((pdf) => ({
-        id: pdf._id,
-        title: pdf.aiGeneratedTitle,
-        fileName: pdf.pdfFileName,
-        caption: pdf.aiGeneratedCaption,
-        uploadedAt: pdf.uploadedAt,
-      }));
-  
-      res.status(200).json({ pdfs: formattedPdfs });
+      res.status(200).json({ pdfs: userPdfs });
     } catch (error) {
       console.error("Error fetching PDFs:", error.message);
       res.status(500).json({ error: "Failed to fetch PDFs." });
     }
   });
   
+  router.put("/pdfs/:id/toggle-privacy", verifyToken, async (req, res) => {
+    try {
+      const pdfId = req.params.id;
+      const pdf = await PDF.findById(pdfId);
+  
+      if (!pdf) {
+        return res.status(404).json({ error: "PDF not found." });
+      }
+  
+      if (pdf.userId !== req.user.userId) {
+        return res.status(403).json({ error: "You are not authorized to change this PDF's privacy." });
+      }
+  
+      // Toggle privacy
+      pdf.privacy = pdf.privacy === "public" ? "private" : "public";
+      await pdf.save();
+  
+      res.status(200).json({ message: "Privacy updated successfully.", privacy: pdf.privacy });
+    } catch (error) {
+      console.error("Error toggling PDF privacy:", error.message);
+      res.status(500).json({ error: "Failed to toggle privacy." });
+    }
+  });
+
 export default router;

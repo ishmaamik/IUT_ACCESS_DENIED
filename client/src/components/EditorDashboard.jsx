@@ -20,6 +20,9 @@ const EditorDashboard = () => {
         <li>
           <Link to="/chatbot">Banglish Chatbot</Link>
         </li>
+        <li>
+          <Link to="/profile">Profile</Link>
+        </li>
       </ul>
       <Logout />
     </div>

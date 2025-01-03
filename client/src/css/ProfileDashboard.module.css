@@ -1,104 +1,106 @@
 .dashboard {
-    display: flex;
-    flex-direction: column;
-    background-color: #f7f8fa;
-    font-family: "Arial", sans-serif;
-    height: 100vh;
-  }
-  
-  .topbar {
-    background: linear-gradient(90deg, #4facfe, #00f2fe);
-    color: #fff;
-    padding: 15px 30px;
-    text-align: center;
-    font-size: 1.5em;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .content {
-    display: flex;
-    flex-direction: row;
-    height: calc(100vh - 60px);
-  }
-  
-  .sidebar {
-    width: 250px;
-    background-color: #fff;
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .sidebar ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .sidebar li {
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
-    cursor: pointer;
-    color: #555;
-  }
-  
-  .sidebar li:hover {
-    color: #007bff;
-  }
-  
-  .mainContent {
-    flex: 1;
-    padding: 20px;
-  }
-  
-  .profileSection, .pdfSection {
-    background-color: #fff;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .profileSection h3, .pdfSection h3 {
-    margin-bottom: 15px;
-    color: #333;
-  }
-  
-  .input {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-  }
-  
-  .button {
-    padding: 8px 15px;
-    color: #fff;
-    background: linear-gradient(90deg, #4facfe, #00f2fe);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  
-  .button:hover {
-    background: linear-gradient(90deg, #00f2fe, #4facfe);
-  }
-  
-  .pdfLists {
-    display: flex;
-    gap: 20px;
-  }
-  
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  background-color: #f7f8fa;
+  font-family: "Arial", sans-serif;
+  height: 100vh;
+}
+
+.topbar {
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  color: #fff;
+  padding: 15px 30px;
+  text-align: center;
+  font-size: 1.5em;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 60px);
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sidebar li {
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  color: #555;
+}
+
+.sidebar li:hover {
+  color: #007bff;
+}
+
+.mainContent {
+  flex: 1;
+  padding: 20px;
+}
+
+.profileSection, .pdfSection {
+  background-color: #fff;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.profileSection h3, .pdfSection h3 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.input {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.button {
+  margin: 0 5px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+
+.pdfLists {
+  display: flex;
+  gap: 20px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+}

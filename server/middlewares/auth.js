@@ -11,7 +11,8 @@ export const authenticateUser = (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded; // Attach user info (userId and role) to request
+    req.user = decoded; 
+    console.log(req.user)// Attach user info (userId and role) to request
     next();
   } catch (error) {
     res.status(401).json({ error: "Invalid or expired token" });

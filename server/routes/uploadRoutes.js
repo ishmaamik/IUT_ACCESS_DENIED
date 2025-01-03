@@ -121,10 +121,11 @@ router.post(
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    const username = req.user?.username;
-    const user = req.user;
-    if (!username) {
-      return res.status(400).json({ error: "Username is missing from request." });
+    const userId = req.user?.userId;
+    console.log("UserId:", userId);
+    console.log(req.user?.userId) 
+    if (!userId) {
+      return res.status(400).json({ error: "userId is missing from request." });
     }
 
     try {
@@ -151,7 +152,7 @@ router.post(
 
       const metadata = {
         status: req.user.role === "Admin" ? "approved" : "pending",
-        uploader: username,
+        uploader: userId,
       };
 
       const readStream = fs.createReadStream(tempFilePath);
@@ -163,10 +164,11 @@ router.post(
         fs.unlinkSync(tempFilePath); // Delete temp file
 
         const pdfData = new PDF({
-          userId: user.userId,
+          userId,
           pdfFileName: req.file.originalname,
           aiGeneratedTitle,
           aiGeneratedCaption,
+          privacy:'public',
         });
 
         await pdfData.save();

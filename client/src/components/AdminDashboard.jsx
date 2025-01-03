@@ -21,6 +21,9 @@ const AdminDashboard = () => {
         <li>
           <Link to="/analytics">Analytics</Link>
         </li>
+        <li>
+          <Link to="/profile">Profile</Link>
+        </li>
       </ul>
     </div>
   );
