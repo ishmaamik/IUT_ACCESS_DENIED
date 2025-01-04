@@ -2,10 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Logout from "./Logout";
 
+import NavbarSearch from "./NavbarSearch";
 const EditorDashboard = () => {
   return (
     <div>
       <h2>Editor Dashboard</h2>
+      <NavbarSearch />
 
       <ul>
         <li>

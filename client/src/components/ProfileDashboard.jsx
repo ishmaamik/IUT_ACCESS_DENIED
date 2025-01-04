@@ -16,6 +16,7 @@ const ProfileDashboard = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Fetch user data on component mount
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -31,12 +32,13 @@ const ProfileDashboard = () => {
         setDownloadedPdfs(response.data.downloadedPdfs || []);
         setSocialLinks(response.data.user.socialLinks || {});
       } catch (err) {
-        setError("Error fetching user data: " + err.message);
+        setError(`Error fetching user data: ${err.message}`);
       }
     };
     fetchUserData();
   }, []);
 
+  // Toggle PDF privacy
   const handleTogglePrivacy = async (pdfId) => {
     try {
       const token = localStorage.getItem("token");
@@ -45,23 +47,24 @@ const ProfileDashboard = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       const updatedPrivacy = response.data.privacy;
-  
+
       // Update the local state
       setUploadedPdfs((prevPdfs) =>
         prevPdfs.map((pdf) =>
           pdf._id === pdfId ? { ...pdf, privacy: updatedPrivacy } : pdf
         )
       );
-  
-      toast.success("Privacy updated successfully!");
+
+      toast.success(`Privacy updated to ${updatedPrivacy}!`);
     } catch (err) {
       console.error("Error toggling privacy:", err.message);
       toast.error("Failed to update privacy.");
     }
   };
 
+  // Update username
   const handleUpdateUsername = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -71,13 +74,14 @@ const ProfileDashboard = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUser({ ...user, username: response.data.username });
-      setSuccess("Username updated successfully!");
       setNewUsername("");
+      toast.success("Username updated successfully!");
     } catch (err) {
-      setError("Error updating username: " + err.message);
+      setError(`Error updating username: ${err.message}`);
     }
   };
 
+  // Update social links
   const handleSocialLinksUpdate = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -87,12 +91,13 @@ const ProfileDashboard = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUser({ ...user, socialLinks: response.data.socialLinks });
-      setSuccess("Social links updated successfully!");
+      toast.success("Social links updated successfully!");
     } catch (err) {
-      setError("Error updating social links: " + err.message);
+      setError(`Error updating social links: ${err.message}`);
     }
   };
 
+  // Download PDF
   const handleDownloadPdf = async (fileId, filename) => {
     try {
       const token = localStorage.getItem("token");
@@ -110,11 +115,9 @@ const ProfileDashboard = () => {
       link.click();
       link.remove();
     } catch (err) {
-      alert("Error downloading file: " + err.message);
+      toast.error(`Error downloading file: ${err.message}`);
     }
   };
-  
-
 
   return (
     <div className={styles.dashboard}>
@@ -135,14 +138,14 @@ const ProfileDashboard = () => {
           <section className={styles.profileSection}>
             <h3>Profile Details</h3>
             <p>
-              <strong>Username:</strong> {user.email}
+              <strong>Username:</strong> {user.username}
             </p>
             <div>
               <input
                 type="text"
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
-                placeholder={newUsername ? newUsername : user.username}
+                placeholder="Enter new username"
                 className={styles.input}
               />
               <button onClick={handleUpdateUsername} className={styles.button}>
@@ -189,51 +192,44 @@ const ProfileDashboard = () => {
           <section className={styles.pdfSection}>
             <h3>Your PDFs</h3>
             <div className={styles.pdfLists}>
-              <div>
-                <h4>Uploaded PDFs</h4>
-                <ul>
-                  {uploadedPdfs.map((pdf) => (
-                    <li key={pdf._id} className={styles.pdfItem}>
-                      <div>
-                        <p>
-                          Title:
-                          <h4>{pdf.aiGeneratedTitle || "Untitled"}</h4>{" "}
-                        </p>
-                        {/* Display title */}
-                        <p>
-                          <strong>File Name:</strong> {pdf.pdfFileName}
-                        </p>{" "}
-                        {/* Display file name */}
-                        <p>
-                          <strong>Caption:</strong>{" "}
-                          {pdf.aiGeneratedCaption || "No caption available"}
-                        </p>{" "}
-                        {/* Display caption */}
-                      </div>
-                      <button
-                        onClick={() =>
-                          handleDownloadPdf(pdf._id, pdf.pdfFileName)
-                        }
-                        className={styles.button}
-                      >
-                        Download
-                      </button>
-
-                      <button
-                        onClick={() => handleTogglePrivacy(pdf._id)}
-                        className={styles.button}
-                      >
-                        {pdf.privacy === "public"
-                          ? "Public"
-                          : pdf.privacy === "private"
-                          ? "Private"
-                          : "Set Privacy"}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div></div>
+              <h4>Uploaded PDFs</h4>
+              <ul>
+                {uploadedPdfs.map((pdf) => (
+                  <li key={pdf._id} className={styles.pdfItem}>
+                    <div>
+                      <p>
+                        <strong>Title:</strong>{" "}
+                        {pdf.aiGeneratedTitle || "Untitled"}
+                      </p>
+                      <p>
+                        <strong>File Name:</strong> {pdf.pdfFileName}
+                      </p>
+                      <p>
+                        <strong>Caption:</strong>{" "}
+                        {pdf.aiGeneratedCaption || "No caption available"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        handleDownloadPdf(pdf._id, pdf.pdfFileName)
+                      }
+                      className={styles.button}
+                    >
+                      Download
+                    </button>
+                    <button
+                      onClick={() => handleTogglePrivacy(pdf._id)}
+                      className={styles.button}
+                    >
+                      {pdf.privacy === "public"
+                        ? "Public"
+                        : pdf.privacy === "private"
+                        ? "Private"
+                        : "Public"}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           </section>
         </main>

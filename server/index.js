@@ -8,6 +8,7 @@ import chatbotRoutes from './routes/chatbotRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import translateRoutes from './routes/translate.js';
 import profileRoutes from './routes/profileRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
 dotenv.config();
 
 const app = express();
@@ -38,6 +39,7 @@ app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use('/api/editor', translateRoutes);
 app.use('/api/profile', profileRoutes);
+app.use("/api", searchRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

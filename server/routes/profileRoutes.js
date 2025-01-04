@@ -74,6 +74,7 @@ router.get("/profile", verifyToken, async (req, res) => {
   router.put("/pdfs/:id/toggle-privacy", verifyToken, async (req, res) => {
     try {
       const pdfId = req.params.id;
+      const { doubleClick } = req.body; // Determine if this is a double-click
       const pdf = await PDF.findById(pdfId);
   
       if (!pdf) {
@@ -81,18 +82,23 @@ router.get("/profile", verifyToken, async (req, res) => {
       }
   
       if (pdf.userId !== req.user.userId) {
-        return res.status(403).json({ error: "You are not authorized to change this PDF's privacy." });
+        return res.status(403).json({ error: "Unauthorized to change this PDF's privacy." });
       }
   
-      // Toggle privacy
-      pdf.privacy = pdf.privacy === "public" ? "private" : "public";
-      await pdf.save();
+      if (doubleClick) {
+        // Revert the last toggle state
+        pdf.privacy = pdf.privacy === "public" ? "private" : "public";
+      } else {
+        // Regular toggle
+        pdf.privacy = pdf.privacy === "public" ? "private" : "public";
+      }
   
+      await pdf.save();
       res.status(200).json({ message: "Privacy updated successfully.", privacy: pdf.privacy });
     } catch (error) {
       console.error("Error toggling PDF privacy:", error.message);
       res.status(500).json({ error: "Failed to toggle privacy." });
     }
   });
-
-export default router;
+  
+  export default router
